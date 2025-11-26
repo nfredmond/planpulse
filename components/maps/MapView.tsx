@@ -3,10 +3,6 @@
 import { useRef, useEffect, useState } from 'react';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
-import { useDemo } from '@/lib/hooks/useDemo';
-
-// Set the access token
-mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN || '';
 
 interface MapViewProps {
   activeLayers: string[];
@@ -70,103 +66,125 @@ export default function MapView({ activeLayers }: MapViewProps) {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
   const [mapLoaded, setMapLoaded] = useState(false);
-  const { isDemo } = useDemo();
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!mapContainer.current || map.current) return;
+    if (!mapContainer.current) return;
+    if (map.current) return; // already initialized
 
-    // Initialize map
-    map.current = new mapboxgl.Map({
-      container: mapContainer.current,
-      style: 'mapbox://styles/mapbox/dark-v11',
-      center: [-121.4944, 38.5816], // Sacramento
-      zoom: 12,
-    });
+    const token = process.env.NEXT_PUBLIC_MAPBOX_TOKEN;
+    if (!token) {
+      setError('Mapbox token not configured');
+      return;
+    }
 
-    map.current.addControl(new mapboxgl.NavigationControl(), 'bottom-right');
-    map.current.addControl(new mapboxgl.ScaleControl(), 'bottom-left');
+    // Set the access token
+    mapboxgl.accessToken = token;
 
-    map.current.on('load', () => {
-      if (!map.current) return;
-      
-      // Add demo data sources
-      map.current.addSource('projects', {
-        type: 'geojson',
-        data: DEMO_DATA.projects
+    try {
+      // Initialize map
+      map.current = new mapboxgl.Map({
+        container: mapContainer.current,
+        style: 'mapbox://styles/mapbox/streets-v12', // Use streets style for better visibility
+        center: [-121.4944, 38.5816], // Sacramento
+        zoom: 11,
       });
 
-      map.current.addSource('crashes', {
-        type: 'geojson',
-        data: DEMO_DATA.crashes
+      map.current.addControl(new mapboxgl.NavigationControl(), 'bottom-right');
+      map.current.addControl(new mapboxgl.ScaleControl(), 'bottom-left');
+
+      map.current.on('error', (e) => {
+        console.error('Mapbox error:', e);
+        setError(`Map error: ${e.error?.message || 'Unknown error'}`);
       });
 
-      map.current.addSource('community-inputs', {
-        type: 'geojson',
-        data: DEMO_DATA.communityInputs
-      });
+      map.current.on('load', () => {
+        if (!map.current) return;
+        
+        // Add demo data sources
+        map.current.addSource('projects', {
+          type: 'geojson',
+          data: DEMO_DATA.projects
+        });
 
-      map.current.addSource('transit-stops', {
-        type: 'geojson',
-        data: DEMO_DATA.transitStops
-      });
+        map.current.addSource('crashes', {
+          type: 'geojson',
+          data: DEMO_DATA.crashes
+        });
 
-      // Add layers
-      map.current.addLayer({
-        id: 'projects',
-        type: 'circle',
-        source: 'projects',
-        paint: {
-          'circle-radius': 10,
-          'circle-color': '#10b981',
-          'circle-stroke-width': 2,
-          'circle-stroke-color': '#fff'
-        }
-      });
+        map.current.addSource('community-inputs', {
+          type: 'geojson',
+          data: DEMO_DATA.communityInputs
+        });
 
-      map.current.addLayer({
-        id: 'crashes',
-        type: 'circle',
-        source: 'crashes',
-        paint: {
-          'circle-radius': ['get', 'count'],
-          'circle-color': '#ef4444',
-          'circle-opacity': 0.7,
-          'circle-stroke-width': 1,
-          'circle-stroke-color': '#fff'
-        }
-      });
+        map.current.addSource('transit-stops', {
+          type: 'geojson',
+          data: DEMO_DATA.transitStops
+        });
 
-      map.current.addLayer({
-        id: 'community-inputs',
-        type: 'circle',
-        source: 'community-inputs',
-        paint: {
-          'circle-radius': 8,
-          'circle-color': '#f59e0b',
-          'circle-stroke-width': 2,
-          'circle-stroke-color': '#fff'
-        }
-      });
+        // Add layers
+        map.current.addLayer({
+          id: 'projects',
+          type: 'circle',
+          source: 'projects',
+          paint: {
+            'circle-radius': 12,
+            'circle-color': '#10b981',
+            'circle-stroke-width': 3,
+            'circle-stroke-color': '#fff'
+          }
+        });
 
-      map.current.addLayer({
-        id: 'transit-stops',
-        type: 'circle',
-        source: 'transit-stops',
-        paint: {
-          'circle-radius': 6,
-          'circle-color': '#8b5cf6',
-          'circle-stroke-width': 2,
-          'circle-stroke-color': '#fff'
-        }
-      });
+        map.current.addLayer({
+          id: 'crashes',
+          type: 'circle',
+          source: 'crashes',
+          paint: {
+            'circle-radius': ['*', ['get', 'count'], 2],
+            'circle-color': '#ef4444',
+            'circle-opacity': 0.8,
+            'circle-stroke-width': 2,
+            'circle-stroke-color': '#fff'
+          }
+        });
 
-      setMapLoaded(true);
-    });
+        map.current.addLayer({
+          id: 'community-inputs',
+          type: 'circle',
+          source: 'community-inputs',
+          paint: {
+            'circle-radius': 10,
+            'circle-color': '#f59e0b',
+            'circle-stroke-width': 2,
+            'circle-stroke-color': '#fff'
+          }
+        });
+
+        map.current.addLayer({
+          id: 'transit-stops',
+          type: 'circle',
+          source: 'transit-stops',
+          paint: {
+            'circle-radius': 8,
+            'circle-color': '#8b5cf6',
+            'circle-stroke-width': 2,
+            'circle-stroke-color': '#fff'
+          }
+        });
+
+        setMapLoaded(true);
+      });
+    } catch (err) {
+      console.error('Failed to initialize map:', err);
+      setError(`Failed to initialize map: ${err}`);
+    }
 
     // Cleanup
     return () => {
-      map.current?.remove();
-      map.current = null;
+      if (map.current) {
+        map.current.remove();
+        map.current = null;
+      }
     };
   }, []);
 
@@ -174,7 +192,7 @@ export default function MapView({ activeLayers }: MapViewProps) {
   useEffect(() => {
     if (!map.current || !mapLoaded) return;
 
-    const layerIds = ['projects', 'crashes', 'community-inputs', 'transit-stops', 'transit-routes'];
+    const layerIds = ['projects', 'crashes', 'community-inputs', 'transit-stops'];
     
     layerIds.forEach(layerId => {
       if (map.current?.getLayer(layerId)) {
@@ -227,6 +245,22 @@ export default function MapView({ activeLayers }: MapViewProps) {
     });
   }, [mapLoaded]);
 
-  return <div ref={mapContainer} className="absolute inset-0" />;
-}
+  if (error) {
+    return (
+      <div className="absolute inset-0 flex items-center justify-center bg-slate-900">
+        <div className="text-center text-red-400">
+          <p className="font-medium">Map Error</p>
+          <p className="text-sm text-slate-500 mt-1">{error}</p>
+        </div>
+      </div>
+    );
+  }
 
+  return (
+    <div 
+      ref={mapContainer} 
+      className="w-full h-full"
+      style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}
+    />
+  );
+}
