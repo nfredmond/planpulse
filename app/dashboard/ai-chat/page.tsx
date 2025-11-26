@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { useChat } from '@ai-sdk/react';
 import { useDemo } from '@/lib/hooks/useDemo';
 import { toast } from 'sonner';
 import ModelSelector from '@/components/ai/ModelSelector';
@@ -17,9 +16,14 @@ import {
   DollarSign,
   BarChart3,
   FileText,
-  RefreshCw,
   RotateCcw
 } from 'lucide-react';
+
+interface Message {
+  id: string;
+  role: 'user' | 'assistant';
+  content: string;
+}
 
 const SUGGESTED_PROMPTS = [
   {
@@ -57,42 +61,14 @@ const SUGGESTED_PROMPTS = [
 export default function AIChatPage() {
   const { isDemo } = useDemo();
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const [demoMessages, setDemoMessages] = useState<Array<{id: string; role: 'user' | 'assistant'; content: string}>>([]);
-  const [demoInput, setDemoInput] = useState('');
-  const [demoLoading, setDemoLoading] = useState(false);
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [input, setInput] = useState('');
+  const [loading, setLoading] = useState(false);
   const [selectedModel, setSelectedModel] = useState(DEFAULT_MODEL);
-
-  // Real AI chat hook (only used when not in demo mode)
-  const { 
-    messages, 
-    input, 
-    handleInputChange, 
-    handleSubmit, 
-    isLoading,
-    setInput,
-    setMessages,
-    reload,
-    error
-  } = useChat({
-    api: '/api/chat',
-    body: {
-      model: selectedModel,
-    },
-    onError: (err) => {
-      toast.error(err.message || 'Failed to send message');
-    },
-  });
+  const [error, setError] = useState<string | null>(null);
 
   const currentModelInfo = getModelById(selectedModel);
   const modelColors = currentModelInfo ? PROVIDER_COLORS[currentModelInfo.provider] : PROVIDER_COLORS.anthropic;
-
-  const clearChat = () => {
-    if (isDemo) {
-      setDemoMessages([]);
-    } else {
-      setMessages([]);
-    }
-  };
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -100,45 +76,124 @@ export default function AIChatPage() {
 
   useEffect(() => {
     scrollToBottom();
-  }, [messages, demoMessages]);
+  }, [messages]);
 
-  // Demo mode message handling
-  const handleDemoSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!demoInput.trim() || demoLoading) return;
-
-    const userMessage = {
-      id: Date.now().toString(),
-      role: 'user' as const,
-      content: demoInput.trim(),
-    };
-
-    setDemoMessages(prev => [...prev, userMessage]);
-    setDemoInput('');
-    setDemoLoading(true);
-
-    setTimeout(() => {
-      const assistantMessage = {
-        id: (Date.now() + 1).toString(),
-        role: 'assistant' as const,
-        content: getDemoResponse(userMessage.content),
-      };
-      setDemoMessages(prev => [...prev, assistantMessage]);
-      setDemoLoading(false);
-    }, 1500);
+  const clearChat = () => {
+    setMessages([]);
+    setError(null);
   };
 
-  const handleSuggestedPrompt = (prompt: string) => {
+  const handleSendMessage = async (messageText: string) => {
+    if (!messageText.trim() || loading) return;
+
+    const userMessage: Message = {
+      id: Date.now().toString(),
+      role: 'user',
+      content: messageText.trim(),
+    };
+
+    setInput('');
+    setMessages(prev => [...prev, userMessage]);
+    setLoading(true);
+    setError(null);
+
+    // Demo mode - use simulated responses
     if (isDemo) {
-      setDemoInput(prompt);
-    } else {
-      setInput(prompt);
+      setTimeout(() => {
+        const assistantMessage: Message = {
+          id: (Date.now() + 1).toString(),
+          role: 'assistant',
+          content: getDemoResponse(userMessage.content),
+        };
+        setMessages(prev => [...prev, assistantMessage]);
+        setLoading(false);
+      }, 1500);
+      return;
+    }
+
+    // Real AI mode - call the API
+    try {
+      const response = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          messages: [...messages, userMessage].map(m => ({ role: m.role, content: m.content })),
+          model: selectedModel,
+        }),
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || data.details || 'Failed to get response');
+      }
+
+      // Handle streaming response
+      const reader = response.body?.getReader();
+      const decoder = new TextDecoder();
+      let assistantContent = '';
+
+      const assistantMessage: Message = {
+        id: (Date.now() + 1).toString(),
+        role: 'assistant',
+        content: '',
+      };
+      setMessages(prev => [...prev, assistantMessage]);
+
+      if (reader) {
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          
+          const chunk = decoder.decode(value);
+          // Parse SSE format
+          const lines = chunk.split('\n');
+          for (const line of lines) {
+            if (line.startsWith('0:')) {
+              // Text content
+              try {
+                const content = JSON.parse(line.slice(2));
+                assistantContent += content;
+                setMessages(prev => prev.map(m => 
+                  m.id === assistantMessage.id 
+                    ? { ...m, content: assistantContent }
+                    : m
+                ));
+              } catch {
+                // Not JSON, might be raw text
+                assistantContent += line.slice(2);
+                setMessages(prev => prev.map(m => 
+                  m.id === assistantMessage.id 
+                    ? { ...m, content: assistantContent }
+                    : m
+                ));
+              }
+            }
+          }
+        }
+      }
+    } catch (err: unknown) {
+      console.error('Chat error:', err);
+      const errorMessage = err instanceof Error ? err.message : 'Sorry, I encountered an error. Please try again.';
+      setError(errorMessage);
+      toast.error(errorMessage);
+      setMessages(prev => [...prev, { 
+        id: (Date.now() + 1).toString(),
+        role: 'assistant', 
+        content: `⚠️ Error: ${errorMessage}\n\nTry selecting a different model or check the console for details.` 
+      }]);
+    } finally {
+      setLoading(false);
     }
   };
 
-  const currentMessages = isDemo ? demoMessages : messages;
-  const currentInput = isDemo ? demoInput : (input || '');
-  const currentLoading = isDemo ? demoLoading : isLoading;
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    handleSendMessage(input);
+  };
+
+  const handleSuggestedPrompt = (prompt: string) => {
+    setInput(prompt);
+  };
 
   return (
     <div className="h-[calc(100vh-theme(spacing.32))] flex flex-col">
@@ -158,7 +213,7 @@ export default function AIChatPage() {
           />
           
           {/* Clear chat button */}
-          {currentMessages.length > 0 && (
+          {messages.length > 0 && (
             <button
               onClick={clearChat}
               className="flex items-center gap-2 px-3 py-2 rounded-lg bg-slate-800/50 hover:bg-slate-800 border border-slate-700/50 text-slate-400 hover:text-white transition-colors text-sm"
@@ -181,7 +236,7 @@ export default function AIChatPage() {
       {/* Error display */}
       {error && (
         <div className="mb-4 p-3 bg-red-500/10 border border-red-500/20 rounded-lg text-red-400 text-sm">
-          {error.message}
+          {error}
         </div>
       )}
 
@@ -189,7 +244,7 @@ export default function AIChatPage() {
       <div className="flex-1 bg-slate-900/50 border border-slate-800 rounded-xl flex flex-col overflow-hidden">
         {/* Messages */}
         <div className="flex-1 overflow-y-auto p-6 space-y-6">
-          {currentMessages.length === 0 ? (
+          {messages.length === 0 ? (
             <div className="h-full flex flex-col items-center justify-center">
               <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-emerald-400 to-teal-500 flex items-center justify-center mb-4">
                 <Bot className="w-8 h-8 text-white" />
@@ -222,7 +277,7 @@ export default function AIChatPage() {
               </div>
             </div>
           ) : (
-            currentMessages.map((message) => (
+            messages.map((message) => (
               <div
                 key={message.id}
                 className={`flex gap-4 ${message.role === 'user' ? 'justify-end' : ''}`}
@@ -252,7 +307,7 @@ export default function AIChatPage() {
             ))
           )}
           
-          {currentLoading && (
+          {loading && (
             <div className="flex gap-4">
               <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-400 to-teal-500 flex items-center justify-center flex-shrink-0">
                 <Bot className="w-4 h-4 text-white" />
@@ -269,34 +324,18 @@ export default function AIChatPage() {
 
         {/* Input */}
         <div className="p-4 border-t border-slate-800">
-          <form 
-            onSubmit={(e) => {
-              e.preventDefault();
-              if (isDemo) {
-                handleDemoSubmit(e);
-              } else if (handleSubmit) {
-                handleSubmit(e);
-              }
-            }} 
-            className="flex gap-3"
-          >
+          <form onSubmit={handleSubmit} className="flex gap-3">
             <input
               type="text"
-              value={currentInput}
-              onChange={(e) => {
-                if (isDemo) {
-                  setDemoInput(e.target.value);
-                } else {
-                  handleInputChange(e);
-                }
-              }}
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
               placeholder="Ask about your projects, grants, or data..."
               className="flex-1 px-4 py-3 bg-slate-800/50 border border-slate-700/50 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50 transition-all"
-              disabled={currentLoading}
+              disabled={loading}
             />
             <button
               type="submit"
-              disabled={!currentInput?.trim() || currentLoading}
+              disabled={!input.trim() || loading}
               className="px-4 py-3 bg-emerald-500 hover:bg-emerald-600 disabled:bg-slate-700 disabled:cursor-not-allowed text-white rounded-xl transition-colors"
             >
               <Send className="w-5 h-5" />
