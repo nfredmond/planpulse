@@ -316,14 +316,14 @@ export const DEMO_COMMUNITY_INPUTS = [
 ];
 
 export const DEMO_TRANSIT_METRICS = [
-  { route_id: '1', route_name: 'Route 1 - Greenback', ridership: 4520, revenue_hours: 156, cost_per_passenger: 4.82, on_time_performance: 0.87 },
-  { route_id: '2', route_name: 'Route 2 - Riverside', ridership: 3890, revenue_hours: 142, cost_per_passenger: 5.21, on_time_performance: 0.91 },
-  { route_id: '15', route_name: 'Route 15 - Del Paso', ridership: 2150, revenue_hours: 98, cost_per_passenger: 6.45, on_time_performance: 0.84 },
-  { route_id: '23', route_name: 'Route 23 - El Camino', ridership: 1780, revenue_hours: 88, cost_per_passenger: 7.12, on_time_performance: 0.79 },
-  { route_id: '30', route_name: 'Route 30 - J Street', ridership: 5210, revenue_hours: 168, cost_per_passenger: 4.15, on_time_performance: 0.93 },
-  { route_id: '51', route_name: 'Route 51 - Broadway', ridership: 3420, revenue_hours: 124, cost_per_passenger: 5.67, on_time_performance: 0.86 },
-  { route_id: '62', route_name: 'Route 62 - Freeport', ridership: 1950, revenue_hours: 92, cost_per_passenger: 6.89, on_time_performance: 0.82 },
-  { route_id: '81', route_name: 'Route 81 - Florin', ridership: 2680, revenue_hours: 108, cost_per_passenger: 5.98, on_time_performance: 0.88 },
+  { route_id: '1', route_name: 'Route 1 - Greenback', ridership: 4520, revenue_hours: 156, cost_per_passenger: 4.82, on_time_performance: 0.87, operating_cost: 21786 },
+  { route_id: '2', route_name: 'Route 2 - Riverside', ridership: 3890, revenue_hours: 142, cost_per_passenger: 5.21, on_time_performance: 0.91, operating_cost: 20267 },
+  { route_id: '15', route_name: 'Route 15 - Del Paso', ridership: 2150, revenue_hours: 98, cost_per_passenger: 6.45, on_time_performance: 0.84, operating_cost: 13868 },
+  { route_id: '23', route_name: 'Route 23 - El Camino', ridership: 1780, revenue_hours: 88, cost_per_passenger: 7.12, on_time_performance: 0.79, operating_cost: 12673 },
+  { route_id: '30', route_name: 'Route 30 - J Street', ridership: 5210, revenue_hours: 168, cost_per_passenger: 4.15, on_time_performance: 0.93, operating_cost: 21622 },
+  { route_id: '51', route_name: 'Route 51 - Broadway', ridership: 3420, revenue_hours: 124, cost_per_passenger: 5.67, on_time_performance: 0.86, operating_cost: 19391 },
+  { route_id: '62', route_name: 'Route 62 - Freeport', ridership: 1950, revenue_hours: 92, cost_per_passenger: 6.89, on_time_performance: 0.82, operating_cost: 13436 },
+  { route_id: '81', route_name: 'Route 81 - Florin', ridership: 2680, revenue_hours: 108, cost_per_passenger: 5.98, on_time_performance: 0.88, operating_cost: 16026 },
 ];
 
 export const DEMO_CRASH_DATA = [
