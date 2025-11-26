@@ -152,12 +152,10 @@ export default function AIChatPage() {
         </div>
         <div className="flex items-center gap-3">
           {/* Model Selector */}
-          {!isDemo && (
-            <ModelSelector
-              selectedModel={selectedModel}
-              onModelChange={setSelectedModel}
-            />
-          )}
+          <ModelSelector
+            selectedModel={selectedModel}
+            onModelChange={setSelectedModel}
+          />
           
           {/* Clear chat button */}
           {currentMessages.length > 0 && (
@@ -171,16 +169,12 @@ export default function AIChatPage() {
           )}
           
           {/* Status badge */}
-          <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full border ${
-            isDemo 
-              ? 'bg-amber-500/20 border-amber-500/30' 
-              : `${modelColors.bg} border-slate-700/50`
-          }`}>
-            <div className={`w-2 h-2 rounded-full ${isDemo ? 'bg-amber-400' : modelColors.dot}`} />
-            <span className={`text-sm font-medium ${isDemo ? 'text-amber-400' : modelColors.text}`}>
-              {isDemo ? 'Demo Mode' : currentModelInfo?.name || 'AI'}
-            </span>
-          </div>
+          {isDemo && (
+            <div className="flex items-center gap-2 px-3 py-1.5 rounded-full border bg-amber-500/20 border-amber-500/30">
+              <div className="w-2 h-2 rounded-full bg-amber-400" />
+              <span className="text-sm font-medium text-amber-400">Demo Mode</span>
+            </div>
+          )}
         </div>
       </div>
 
@@ -276,7 +270,14 @@ export default function AIChatPage() {
         {/* Input */}
         <div className="p-4 border-t border-slate-800">
           <form 
-            onSubmit={isDemo ? handleDemoSubmit : handleSubmit} 
+            onSubmit={(e) => {
+              e.preventDefault();
+              if (isDemo) {
+                handleDemoSubmit(e);
+              } else if (handleSubmit) {
+                handleSubmit(e);
+              }
+            }} 
             className="flex gap-3"
           >
             <input
