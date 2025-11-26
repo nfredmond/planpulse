@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createServiceRoleClient } from '@/lib/supabase/service-role';
+import { createServiceClient } from '@/lib/supabase/service-role';
 
 // Public endpoint - no auth required
 export async function GET(
@@ -8,7 +8,7 @@ export async function GET(
 ) {
   try {
     const { id } = await params;
-    const supabase = createServiceRoleClient();
+    const supabase = createServiceClient();
 
     // Fetch engagement
     const { data: engagement, error } = await supabase

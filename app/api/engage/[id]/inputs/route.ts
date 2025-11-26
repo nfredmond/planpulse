@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createServiceRoleClient } from '@/lib/supabase/service-role';
+import { createServiceClient } from '@/lib/supabase/service-role';
 
 // Public endpoint - submit community input
 export async function POST(
@@ -8,7 +8,7 @@ export async function POST(
 ) {
   try {
     const { id: engagementId } = await params;
-    const supabase = createServiceRoleClient();
+    const supabase = createServiceClient();
     const body = await request.json();
 
     // Verify engagement exists and is active

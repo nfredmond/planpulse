@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createServiceRoleClient } from '@/lib/supabase/service-role';
+import { createServiceClient } from '@/lib/supabase/service-role';
 
 // Public endpoint - upvote input
 export async function POST(
@@ -8,7 +8,7 @@ export async function POST(
 ) {
   try {
     const { inputId } = await params;
-    const supabase = createServiceRoleClient();
+    const supabase = createServiceClient();
     const body = await request.json();
     const sessionId = body.session_id;
 
