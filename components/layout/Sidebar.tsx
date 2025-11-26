@@ -1,9 +1,9 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { 
-  Map, 
   LayoutDashboard, 
   FolderKanban, 
   DollarSign, 
@@ -61,10 +61,16 @@ export default function Sidebar() {
       `}
     >
       {/* Logo */}
-      <div className="h-16 flex items-center justify-between px-4 border-b border-slate-800">
+      <div className="h-16 flex items-center justify-between px-4 border-b border-slate-800 mt-10">
         <Link href="/dashboard" className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-400 to-teal-500 flex items-center justify-center shadow-lg shadow-emerald-500/20">
-            <Map className="w-5 h-5 text-white" />
+          <div className="w-10 h-10 rounded-xl overflow-hidden flex items-center justify-center shadow-lg shadow-emerald-500/20">
+            <Image 
+              src="/planpulselogo.png" 
+              alt="PlanPulse" 
+              width={40} 
+              height={40}
+              className="object-contain"
+            />
           </div>
           {!collapsed && (
             <span className="text-xl font-bold text-white tracking-tight">

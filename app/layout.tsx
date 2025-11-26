@@ -18,10 +18,18 @@ export const metadata: Metadata = {
   description: "AI-powered platform for transportation and urban planners. Manage projects, track grants, engage communities, and analyze data.",
   keywords: ["transportation planning", "urban planning", "grant tracking", "community engagement", "transit planning"],
   authors: [{ name: "PlanPulse" }],
+  icons: {
+    icon: [
+      { url: "/planpulselogo.png", type: "image/png" },
+    ],
+    apple: "/planpulselogo.png",
+    shortcut: "/planpulselogo.png",
+  },
   openGraph: {
     title: "PlanPulse - Transportation Planning Platform",
     description: "AI-powered platform for transportation and urban planners",
     type: "website",
+    images: ["/planpulselogo.png"],
   },
 };
 

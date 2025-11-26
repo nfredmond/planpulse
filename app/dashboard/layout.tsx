@@ -11,7 +11,7 @@ export default function DashboardLayout({
     <div className="min-h-screen bg-slate-950">
       <DemoBanner />
       <Sidebar />
-      <div className="pl-64 transition-all duration-300">
+      <div className="pl-64 transition-all duration-300 pt-10">
         <Header />
         <main className="p-6">
           {children}

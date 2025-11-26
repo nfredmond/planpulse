@@ -2,8 +2,9 @@
 
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import { enableDemoMode } from '@/lib/demo-data';
-import { Loader2, Map } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 
 export default function DemoPage() {
   const router = useRouter();
@@ -23,8 +24,14 @@ export default function DemoPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-emerald-950 to-slate-900 flex items-center justify-center">
       <div className="text-center">
-        <div className="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-gradient-to-br from-emerald-400 to-teal-500 mb-6 shadow-lg shadow-emerald-500/25 animate-pulse">
-          <Map className="w-10 h-10 text-white" />
+        <div className="inline-flex items-center justify-center w-24 h-24 rounded-2xl overflow-hidden mb-6 shadow-lg shadow-emerald-500/25 animate-pulse">
+          <Image 
+            src="/planpulselogo.png" 
+            alt="PlanPulse" 
+            width={96} 
+            height={96}
+            className="object-contain"
+          />
         </div>
         <h1 className="text-2xl font-bold text-white mb-2">
           Loading Demo Environment

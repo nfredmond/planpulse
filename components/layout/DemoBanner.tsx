@@ -10,8 +10,8 @@ export default function DemoBanner() {
   if (!mounted || !isDemo) return null;
 
   return (
-    <div className="bg-gradient-to-r from-amber-500/20 to-orange-500/20 border-b border-amber-500/30">
-      <div className="max-w-7xl mx-auto px-4 py-2 flex items-center justify-between">
+    <div className="fixed top-0 left-0 right-0 z-[60] bg-gradient-to-r from-amber-500/20 to-orange-500/20 border-b border-amber-500/30 backdrop-blur-sm">
+      <div className="pl-64 pr-4 py-2 flex items-center justify-between transition-all duration-300">
         <div className="flex items-center gap-2 text-amber-300 text-sm">
           <Sparkles className="w-4 h-4" />
           <span>

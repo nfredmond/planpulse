@@ -1,5 +1,6 @@
 import Link from 'next/link';
-import { Map, ArrowRight, FolderKanban, DollarSign, Users, BarChart3, Sparkles, CheckCircle } from 'lucide-react';
+import Image from 'next/image';
+import { ArrowRight, FolderKanban, DollarSign, Users, BarChart3, Sparkles, CheckCircle } from 'lucide-react';
 
 export default function LandingPage() {
   return (
@@ -9,8 +10,14 @@ export default function LandingPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-400 to-teal-500 flex items-center justify-center">
-                <Map className="w-5 h-5 text-white" />
+              <div className="w-10 h-10 rounded-xl overflow-hidden">
+                <Image 
+                  src="/planpulselogo.png" 
+                  alt="PlanPulse" 
+                  width={40} 
+                  height={40}
+                  className="object-contain"
+                />
               </div>
               <span className="text-xl font-bold text-white tracking-tight">
                 Plan<span className="text-emerald-400">Pulse</span>
@@ -82,7 +89,13 @@ export default function LandingPage() {
               </div>
               <div className="aspect-video bg-gradient-to-br from-slate-800 to-slate-900 flex items-center justify-center">
                 <div className="text-center">
-                  <Map className="w-16 h-16 text-emerald-400/50 mx-auto mb-4" />
+                  <Image 
+                    src="/planpulselogo.png" 
+                    alt="PlanPulse" 
+                    width={80} 
+                    height={80}
+                    className="mx-auto mb-4 opacity-50"
+                  />
                   <p className="text-slate-500">Dashboard Preview</p>
                 </div>
               </div>
@@ -164,7 +177,13 @@ export default function LandingPage() {
             </div>
             <div className="rounded-2xl border border-slate-800 bg-slate-900/50 p-8">
               <div className="aspect-square rounded-xl bg-gradient-to-br from-emerald-500/10 to-teal-500/10 flex items-center justify-center">
-                <Map className="w-32 h-32 text-emerald-400/30" />
+                <Image 
+                  src="/planpulselogo.png" 
+                  alt="PlanPulse" 
+                  width={160} 
+                  height={160}
+                  className="opacity-30"
+                />
               </div>
             </div>
           </div>
@@ -195,8 +214,14 @@ export default function LandingPage() {
       <footer className="py-12 px-4 sm:px-6 lg:px-8 border-t border-slate-800">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-400 to-teal-500 flex items-center justify-center">
-              <Map className="w-4 h-4 text-white" />
+            <div className="w-8 h-8 rounded-lg overflow-hidden">
+              <Image 
+                src="/planpulselogo.png" 
+                alt="PlanPulse" 
+                width={32} 
+                height={32}
+                className="object-contain"
+              />
             </div>
             <span className="text-lg font-bold text-white">
               Plan<span className="text-emerald-400">Pulse</span>
