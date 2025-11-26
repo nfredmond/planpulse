@@ -327,14 +327,16 @@ export const DEMO_TRANSIT_METRICS = [
 ];
 
 export const DEMO_CRASH_DATA = [
-  { id: 'crash-1', date: '2024-09-15', severity: 'visible_injury', lat: 38.5801, lng: -121.4918, pedestrian: true, bicycle: false },
-  { id: 'crash-2', date: '2024-08-22', severity: 'complaint_of_pain', lat: 38.5756, lng: -121.4892, pedestrian: false, bicycle: true },
-  { id: 'crash-3', date: '2024-07-10', severity: 'severe_injury', lat: 38.5489, lng: -121.4571, pedestrian: true, bicycle: false },
-  { id: 'crash-4', date: '2024-06-05', severity: 'property_damage_only', lat: 38.5834, lng: -121.4956, pedestrian: false, bicycle: false },
-  { id: 'crash-5', date: '2024-05-18', severity: 'visible_injury', lat: 38.5812, lng: -121.4889, pedestrian: false, bicycle: true },
-  { id: 'crash-6', date: '2024-04-30', severity: 'fatal', lat: 38.5795, lng: -121.4932, pedestrian: true, bicycle: false },
-  { id: 'crash-7', date: '2024-03-12', severity: 'complaint_of_pain', lat: 38.5678, lng: -121.4723, pedestrian: false, bicycle: true },
-  { id: 'crash-8', date: '2024-02-28', severity: 'visible_injury', lat: 38.5901, lng: -121.5012, pedestrian: true, bicycle: false },
+  { id: 'crash-1', date: '2024-09-15', severity: 'minor_injury', lat: 38.5801, lng: -121.4918, pedestrian: true, bicycle: false, location: 'J St & 10th St', primary_factor: 'Failure to yield' },
+  { id: 'crash-2', date: '2024-08-22', severity: 'minor_injury', lat: 38.5756, lng: -121.4892, pedestrian: false, bicycle: true, location: 'K St & 15th St', primary_factor: 'Unsafe speed' },
+  { id: 'crash-3', date: '2024-07-10', severity: 'serious_injury', lat: 38.5489, lng: -121.4571, pedestrian: true, bicycle: false, location: 'Broadway & MLK Jr Blvd', primary_factor: 'Red light violation' },
+  { id: 'crash-4', date: '2024-06-05', severity: 'pdo', lat: 38.5834, lng: -121.4956, pedestrian: false, bicycle: false, location: 'Capitol Mall & 3rd St', primary_factor: 'Following too closely' },
+  { id: 'crash-5', date: '2024-05-18', severity: 'minor_injury', lat: 38.5812, lng: -121.4889, pedestrian: false, bicycle: true, location: 'L St & 16th St', primary_factor: 'Improper turning' },
+  { id: 'crash-6', date: '2024-04-30', severity: 'fatal', lat: 38.5795, lng: -121.4932, pedestrian: true, bicycle: false, location: 'J St & 7th St', primary_factor: 'Unsafe speed' },
+  { id: 'crash-7', date: '2024-03-12', severity: 'minor_injury', lat: 38.5678, lng: -121.4723, pedestrian: false, bicycle: true, location: '21st St & H St', primary_factor: 'Failure to yield' },
+  { id: 'crash-8', date: '2024-02-28', severity: 'serious_injury', lat: 38.5901, lng: -121.5012, pedestrian: true, bicycle: false, location: 'Arden Way & Del Paso Blvd', primary_factor: 'Distracted driving' },
+  { id: 'crash-9', date: '2024-02-10', severity: 'pdo', lat: 38.5723, lng: -121.4834, pedestrian: false, bicycle: false, location: 'Florin Rd & Stockton Blvd', primary_factor: 'Lane violation' },
+  { id: 'crash-10', date: '2024-01-25', severity: 'minor_injury', lat: 38.5645, lng: -121.4912, pedestrian: true, bicycle: false, location: 'Fruitridge Rd & 65th St', primary_factor: 'Failure to yield' },
 ];
 
 export const DEMO_GRANT_PROGRAMS = [
