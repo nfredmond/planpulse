@@ -48,6 +48,6 @@ Use professional grant writing language suitable for federal (FHWA, FTA) and sta
     temperature: 0.4,
   });
 
-  return result.toDataStreamResponse();
+  return result.toTextStreamResponse();
 }
 
