@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Map as MapIcon, Layers, Plus, Upload } from 'lucide-react';
+import { Map as MapIcon, Layers, Plus, Upload, AlertTriangle } from 'lucide-react';
 import dynamic from 'next/dynamic';
 
 // Dynamically import the map component to avoid SSR issues
@@ -29,11 +29,18 @@ const LAYER_OPTIONS = [
 
 export default function MapsPage() {
   const [activeLayers, setActiveLayers] = useState<string[]>(['projects']);
-  const [hasToken, setHasToken] = useState<boolean | null>(null);
+  const [tokenStatus, setTokenStatus] = useState<'loading' | 'valid' | 'invalid' | 'missing'>('loading');
 
   useEffect(() => {
-    // Check if Mapbox token is available
-    setHasToken(!!process.env.NEXT_PUBLIC_MAPBOX_TOKEN);
+    // Check if Mapbox token is available and valid (must be public token pk.*)
+    const token = process.env.NEXT_PUBLIC_MAPBOX_TOKEN;
+    if (!token) {
+      setTokenStatus('missing');
+    } else if (token.startsWith('pk.')) {
+      setTokenStatus('valid');
+    } else {
+      setTokenStatus('invalid'); // Secret token (sk.*) or malformed
+    }
   }, []);
 
   const toggleLayer = (layerId: string) => {
@@ -68,7 +75,7 @@ export default function MapsPage() {
 
       {/* Map container */}
       <div className="flex-1 bg-slate-900/50 border border-slate-800 rounded-xl overflow-hidden relative">
-        {hasToken === null ? (
+        {tokenStatus === 'loading' ? (
           // Loading state
           <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-slate-800 to-slate-900">
             <div className="text-center">
@@ -78,9 +85,25 @@ export default function MapsPage() {
               <p className="text-slate-400">Loading...</p>
             </div>
           </div>
-        ) : hasToken ? (
+        ) : tokenStatus === 'valid' ? (
           // Render the map
           <MapComponent activeLayers={activeLayers} />
+        ) : tokenStatus === 'invalid' ? (
+          // Invalid token (secret token used instead of public)
+          <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-slate-800 to-slate-900">
+            <div className="text-center max-w-md">
+              <div className="w-20 h-20 rounded-2xl bg-amber-500/20 flex items-center justify-center mx-auto mb-4">
+                <AlertTriangle className="w-10 h-10 text-amber-400" />
+              </div>
+              <h3 className="text-lg font-semibold text-white mb-2">Invalid Mapbox Token</h3>
+              <p className="text-slate-400">
+                You&apos;re using a <span className="text-amber-400">secret token (sk.*)</span> instead of a <span className="text-emerald-400">public token (pk.*)</span>.
+              </p>
+              <p className="text-sm text-slate-500 mt-4">
+                Get a public token from your <a href="https://account.mapbox.com/access-tokens/" target="_blank" rel="noopener noreferrer" className="text-emerald-400 hover:underline">Mapbox account</a>
+              </p>
+            </div>
+          </div>
         ) : (
           // No token - show configuration message
           <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-slate-800 to-slate-900">
