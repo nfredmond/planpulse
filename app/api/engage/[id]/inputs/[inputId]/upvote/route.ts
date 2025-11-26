@@ -38,17 +38,19 @@ export async function POST(
 
     if (upvoteError) throw upvoteError;
 
-    // Increment upvote count
-    const { data: input, error: updateError } = await supabase
-      .rpc('increment_upvotes', { input_id: inputId });
+    // Increment upvote count - get current count first then increment
+    const { data: currentInput } = await supabase
+      .from('community_inputs')
+      .select('upvotes')
+      .eq('id', inputId)
+      .single();
 
-    // If RPC doesn't exist, do it manually
-    if (updateError) {
-      await supabase
-        .from('community_inputs')
-        .update({ upvotes: supabase.raw('upvotes + 1') })
-        .eq('id', inputId);
-    }
+    const currentUpvotes = currentInput?.upvotes || 0;
+
+    await supabase
+      .from('community_inputs')
+      .update({ upvotes: currentUpvotes + 1 })
+      .eq('id', inputId);
 
     return NextResponse.json({ success: true });
   } catch (error) {
