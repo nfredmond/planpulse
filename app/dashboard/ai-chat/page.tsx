@@ -4,6 +4,8 @@ import { useState, useRef, useEffect } from 'react';
 import { useChat } from '@ai-sdk/react';
 import { useDemo } from '@/lib/hooks/useDemo';
 import { toast } from 'sonner';
+import ModelSelector from '@/components/ai/ModelSelector';
+import { DEFAULT_MODEL, getModelById, PROVIDER_COLORS } from '@/lib/models';
 import { 
   Send, 
   Bot, 
@@ -15,7 +17,8 @@ import {
   DollarSign,
   BarChart3,
   FileText,
-  RefreshCw
+  RefreshCw,
+  RotateCcw
 } from 'lucide-react';
 
 const SUGGESTED_PROMPTS = [
@@ -57,6 +60,7 @@ export default function AIChatPage() {
   const [demoMessages, setDemoMessages] = useState<Array<{id: string; role: 'user' | 'assistant'; content: string}>>([]);
   const [demoInput, setDemoInput] = useState('');
   const [demoLoading, setDemoLoading] = useState(false);
+  const [selectedModel, setSelectedModel] = useState(DEFAULT_MODEL);
 
   // Real AI chat hook (only used when not in demo mode)
   const { 
@@ -66,14 +70,29 @@ export default function AIChatPage() {
     handleSubmit, 
     isLoading,
     setInput,
+    setMessages,
     reload,
     error
   } = useChat({
     api: '/api/chat',
+    body: {
+      model: selectedModel,
+    },
     onError: (err) => {
       toast.error(err.message || 'Failed to send message');
     },
   });
+
+  const currentModelInfo = getModelById(selectedModel);
+  const modelColors = currentModelInfo ? PROVIDER_COLORS[currentModelInfo.provider] : PROVIDER_COLORS.anthropic;
+
+  const clearChat = () => {
+    if (isDemo) {
+      setDemoMessages([]);
+    } else {
+      setMessages([]);
+    }
+  };
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -132,19 +151,34 @@ export default function AIChatPage() {
           </p>
         </div>
         <div className="flex items-center gap-3">
-          {!isDemo && messages.length > 0 && (
+          {/* Model Selector */}
+          {!isDemo && (
+            <ModelSelector
+              selectedModel={selectedModel}
+              onModelChange={setSelectedModel}
+            />
+          )}
+          
+          {/* Clear chat button */}
+          {currentMessages.length > 0 && (
             <button
-              onClick={() => reload()}
-              className="p-2 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-white transition-colors"
-              title="Regenerate last response"
+              onClick={clearChat}
+              className="flex items-center gap-2 px-3 py-2 rounded-lg bg-slate-800/50 hover:bg-slate-800 border border-slate-700/50 text-slate-400 hover:text-white transition-colors text-sm"
             >
-              <RefreshCw className="w-5 h-5" />
+              <RotateCcw className="w-4 h-4" />
+              Clear
             </button>
           )}
-          <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/20 border border-emerald-500/30">
-            <Sparkles className="w-4 h-4 text-emerald-400" />
-            <span className="text-sm text-emerald-400 font-medium">
-              {isDemo ? 'Demo Mode' : 'Powered by AI'}
+          
+          {/* Status badge */}
+          <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full border ${
+            isDemo 
+              ? 'bg-amber-500/20 border-amber-500/30' 
+              : `${modelColors.bg} border-slate-700/50`
+          }`}>
+            <div className={`w-2 h-2 rounded-full ${isDemo ? 'bg-amber-400' : modelColors.dot}`} />
+            <span className={`text-sm font-medium ${isDemo ? 'text-amber-400' : modelColors.text}`}>
+              {isDemo ? 'Demo Mode' : currentModelInfo?.name || 'AI'}
             </span>
           </div>
         </div>
@@ -267,6 +301,15 @@ export default function AIChatPage() {
               <Send className="w-5 h-5" />
             </button>
           </form>
+          {!isDemo && (
+            <p className="text-center text-xs text-slate-500 mt-2">
+              Using{' '}
+              <span className={modelColors.text}>{currentModelInfo?.name}</span>
+              {currentModelInfo?.description && (
+                <span className="text-slate-600"> • {currentModelInfo.description.split('•')[0].trim()}</span>
+              )}
+            </p>
+          )}
         </div>
       </div>
     </div>
