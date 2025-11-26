@@ -644,6 +644,63 @@ export function getDemoStats() {
   };
 }
 
+export const DEMO_PROJECT_TASKS = [
+  {
+    id: 'task-1',
+    project_id: 'proj-1',
+    title: 'Complete existing conditions analysis',
+    description: 'Analyze traffic counts, crash data, and multimodal LOS',
+    status: 'done',
+    due_date: '2024-04-15',
+    assigned_to: 'Demo Planner',
+  },
+  {
+    id: 'task-2',
+    project_id: 'proj-1',
+    title: 'Draft alternatives analysis',
+    description: 'Develop and evaluate 3 design alternatives',
+    status: 'in_progress',
+    due_date: '2024-12-01',
+    assigned_to: 'Demo Planner',
+  },
+  {
+    id: 'task-3',
+    project_id: 'proj-1',
+    title: 'Public workshop #2',
+    description: 'Present alternatives and gather community feedback',
+    status: 'todo',
+    due_date: '2024-12-15',
+    assigned_to: null,
+  },
+  {
+    id: 'task-4',
+    project_id: 'proj-2',
+    title: 'Environmental review kickoff',
+    description: 'Begin CEQA/NEPA documentation process',
+    status: 'in_progress',
+    due_date: '2024-11-30',
+    assigned_to: 'Demo Planner',
+  },
+  {
+    id: 'task-5',
+    project_id: 'proj-3',
+    title: 'School walk audits',
+    description: 'Conduct safety audits at 5 elementary schools',
+    status: 'done',
+    due_date: '2024-03-01',
+    assigned_to: 'Demo Planner',
+  },
+  {
+    id: 'task-6',
+    project_id: 'proj-3',
+    title: 'Submit PS&E to Caltrans',
+    description: 'Prepare and submit Plans, Specifications & Estimates',
+    status: 'in_progress',
+    due_date: '2024-11-28',
+    assigned_to: 'Demo Planner',
+  },
+];
+
 // Get demo action items for Action Center
 export function getDemoActionItems() {
   const { buildActionItems } = require('./data-helpers');
