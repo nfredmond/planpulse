@@ -12,6 +12,9 @@ interface CommunityInput {
   content: string;
   sentiment: string;
   upvotes: number;
+  photo_urls?: string[];
+  moderation_status?: string;
+  created_at?: string;
   lat?: number;
   lng?: number;
 }
