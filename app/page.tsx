@@ -212,29 +212,44 @@ export default function LandingPage() {
 
       {/* Footer */}
       <footer className="py-12 px-4 sm:px-6 lg:px-8 border-t border-slate-800">
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg overflow-hidden">
-              <Image 
-                src="/planpulselogo.png" 
-                alt="PlanPulse" 
-                width={32} 
-                height={32}
-                className="object-contain"
-              />
+        <div className="max-w-7xl mx-auto">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-6">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-lg overflow-hidden">
+                <Image 
+                  src="/planpulselogo.png" 
+                  alt="PlanPulse" 
+                  width={32} 
+                  height={32}
+                  className="object-contain"
+                />
+              </div>
+              <span className="text-lg font-bold text-white">
+                Plan<span className="text-emerald-400">Pulse</span>
+              </span>
             </div>
-            <span className="text-lg font-bold text-white">
-              Plan<span className="text-emerald-400">Pulse</span>
-            </span>
+            <div className="flex gap-6 text-sm text-slate-400">
+              <Link href="/privacy-policy" className="hover:text-white transition-colors">Privacy</Link>
+              <Link href="/terms-of-service" className="hover:text-white transition-colors">Terms</Link>
+              <a href="mailto:info@natfordplanning.com" className="hover:text-white transition-colors">Contact</a>
+            </div>
+            <p className="text-sm text-slate-500">
+              &copy; {new Date().getFullYear()} PlanPulse. All rights reserved.
+            </p>
           </div>
-          <div className="flex gap-6 text-sm text-slate-400">
-            <Link href="/privacy-policy" className="hover:text-white transition-colors">Privacy</Link>
-            <Link href="/terms-of-service" className="hover:text-white transition-colors">Terms</Link>
-            <a href="mailto:support@planpulse.io" className="hover:text-white transition-colors">Support</a>
+          <div className="mt-6 pt-6 border-t border-slate-800/50 text-center">
+            <p className="text-sm text-slate-500">
+              A product of{' '}
+              <a 
+                href="https://natfordplanning.com" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="text-emerald-400 hover:text-emerald-300 transition-colors"
+              >
+                Nat Ford Planning
+              </a>
+            </p>
           </div>
-          <p className="text-sm text-slate-500">
-            &copy; {new Date().getFullYear()} PlanPulse. All rights reserved.
-          </p>
         </div>
       </footer>
     </div>

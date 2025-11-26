@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { DM_Sans, JetBrains_Mono } from "next/font/google";
+import { Providers } from "@/components/providers";
 import "./globals.css";
 
 const dmSans = DM_Sans({
@@ -15,9 +16,11 @@ const jetbrainsMono = JetBrains_Mono({
 
 export const metadata: Metadata = {
   title: "PlanPulse - Transportation Planning Platform",
-  description: "AI-powered platform for transportation and urban planners. Manage projects, track grants, engage communities, and analyze data.",
-  keywords: ["transportation planning", "urban planning", "grant tracking", "community engagement", "transit planning"],
-  authors: [{ name: "PlanPulse" }],
+  description: "AI-powered platform for transportation and urban planners. Manage projects, track grants, engage communities, and analyze data. By Nat Ford Planning.",
+  keywords: ["transportation planning", "urban planning", "grant tracking", "community engagement", "transit planning", "Nat Ford Planning"],
+  authors: [{ name: "Nat Ford Planning", url: "https://natfordplanning.com" }],
+  creator: "Nat Ford Planning",
+  publisher: "Nat Ford Planning",
   icons: {
     icon: [
       { url: "/planpulselogo.png", type: "image/png" },
@@ -27,9 +30,10 @@ export const metadata: Metadata = {
   },
   openGraph: {
     title: "PlanPulse - Transportation Planning Platform",
-    description: "AI-powered platform for transportation and urban planners",
+    description: "AI-powered platform for transportation and urban planners. By Nat Ford Planning.",
     type: "website",
     images: ["/planpulselogo.png"],
+    siteName: "PlanPulse by Nat Ford Planning",
   },
 };
 
@@ -39,11 +43,13 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="dark">
+    <html lang="en" suppressHydrationWarning>
       <body
         className={`${dmSans.variable} ${jetbrainsMono.variable} font-sans antialiased bg-slate-950 text-white`}
       >
-        {children}
+        <Providers>
+          {children}
+        </Providers>
       </body>
     </html>
   );

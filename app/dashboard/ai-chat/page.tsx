@@ -1,7 +1,9 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
+import { useChat } from '@ai-sdk/react';
 import { useDemo } from '@/lib/hooks/useDemo';
+import { toast } from 'sonner';
 import { 
   Send, 
   Bot, 
@@ -11,15 +13,10 @@ import {
   Map,
   FolderKanban,
   DollarSign,
-  BarChart3
+  BarChart3,
+  FileText,
+  RefreshCw
 } from 'lucide-react';
-
-interface Message {
-  id: string;
-  role: 'user' | 'assistant';
-  content: string;
-  timestamp: Date;
-}
 
 const SUGGESTED_PROMPTS = [
   {
@@ -42,14 +39,41 @@ const SUGGESTED_PROMPTS = [
     title: 'Transit Analysis',
     prompt: 'Which transit routes have the highest ridership and cost efficiency?',
   },
+  {
+    icon: FileText,
+    title: 'Grant Writing',
+    prompt: 'Help me write a needs statement for an ATP grant application for a new protected bike lane',
+  },
+  {
+    icon: Sparkles,
+    title: 'Safety Analysis',
+    prompt: 'Analyze the crash data and identify high-priority safety improvements needed',
+  },
 ];
 
 export default function AIChatPage() {
   const { isDemo } = useDemo();
-  const [messages, setMessages] = useState<Message[]>([]);
-  const [input, setInput] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const [demoMessages, setDemoMessages] = useState<Array<{id: string; role: 'user' | 'assistant'; content: string}>>([]);
+  const [demoInput, setDemoInput] = useState('');
+  const [demoLoading, setDemoLoading] = useState(false);
+
+  // Real AI chat hook (only used when not in demo mode)
+  const { 
+    messages, 
+    input, 
+    handleInputChange, 
+    handleSubmit, 
+    isLoading,
+    setInput,
+    reload,
+    error
+  } = useChat({
+    api: '/api/chat',
+    onError: (err) => {
+      toast.error(err.message || 'Failed to send message');
+    },
+  });
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -57,55 +81,45 @@ export default function AIChatPage() {
 
   useEffect(() => {
     scrollToBottom();
-  }, [messages]);
+  }, [messages, demoMessages]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  // Demo mode message handling
+  const handleDemoSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!input.trim() || isLoading) return;
+    if (!demoInput.trim() || demoLoading) return;
 
-    const userMessage: Message = {
+    const userMessage = {
       id: Date.now().toString(),
-      role: 'user',
-      content: input.trim(),
-      timestamp: new Date(),
+      role: 'user' as const,
+      content: demoInput.trim(),
     };
 
-    setMessages(prev => [...prev, userMessage]);
-    setInput('');
-    setIsLoading(true);
+    setDemoMessages(prev => [...prev, userMessage]);
+    setDemoInput('');
+    setDemoLoading(true);
 
-    // Simulate AI response for demo mode
-    if (isDemo) {
-      setTimeout(() => {
-        const assistantMessage: Message = {
-          id: (Date.now() + 1).toString(),
-          role: 'assistant',
-          content: getDemoResponse(userMessage.content),
-          timestamp: new Date(),
-        };
-        setMessages(prev => [...prev, assistantMessage]);
-        setIsLoading(false);
-      }, 1500);
-      return;
-    }
-
-    // Real API call would go here
-    // For now, just show a placeholder response
     setTimeout(() => {
-      const assistantMessage: Message = {
+      const assistantMessage = {
         id: (Date.now() + 1).toString(),
-        role: 'assistant',
-        content: 'AI responses will be available once API keys are configured. This is a demo of the chat interface.',
-        timestamp: new Date(),
+        role: 'assistant' as const,
+        content: getDemoResponse(userMessage.content),
       };
-      setMessages(prev => [...prev, assistantMessage]);
-      setIsLoading(false);
-    }, 1000);
+      setDemoMessages(prev => [...prev, assistantMessage]);
+      setDemoLoading(false);
+    }, 1500);
   };
 
   const handleSuggestedPrompt = (prompt: string) => {
-    setInput(prompt);
+    if (isDemo) {
+      setDemoInput(prompt);
+    } else {
+      setInput(prompt);
+    }
   };
+
+  const currentMessages = isDemo ? demoMessages : messages;
+  const currentInput = isDemo ? demoInput : (input || '');
+  const currentLoading = isDemo ? demoLoading : isLoading;
 
   return (
     <div className="h-[calc(100vh-theme(spacing.32))] flex flex-col">
@@ -117,17 +131,37 @@ export default function AIChatPage() {
             Ask questions about your projects, grants, and data
           </p>
         </div>
-        <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/20 border border-emerald-500/30">
-          <Sparkles className="w-4 h-4 text-emerald-400" />
-          <span className="text-sm text-emerald-400 font-medium">Powered by AI</span>
+        <div className="flex items-center gap-3">
+          {!isDemo && messages.length > 0 && (
+            <button
+              onClick={() => reload()}
+              className="p-2 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-white transition-colors"
+              title="Regenerate last response"
+            >
+              <RefreshCw className="w-5 h-5" />
+            </button>
+          )}
+          <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/20 border border-emerald-500/30">
+            <Sparkles className="w-4 h-4 text-emerald-400" />
+            <span className="text-sm text-emerald-400 font-medium">
+              {isDemo ? 'Demo Mode' : 'Powered by AI'}
+            </span>
+          </div>
         </div>
       </div>
+
+      {/* Error display */}
+      {error && (
+        <div className="mb-4 p-3 bg-red-500/10 border border-red-500/20 rounded-lg text-red-400 text-sm">
+          {error.message}
+        </div>
+      )}
 
       {/* Chat container */}
       <div className="flex-1 bg-slate-900/50 border border-slate-800 rounded-xl flex flex-col overflow-hidden">
         {/* Messages */}
         <div className="flex-1 overflow-y-auto p-6 space-y-6">
-          {messages.length === 0 ? (
+          {currentMessages.length === 0 ? (
             <div className="h-full flex flex-col items-center justify-center">
               <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-emerald-400 to-teal-500 flex items-center justify-center mb-4">
                 <Bot className="w-8 h-8 text-white" />
@@ -141,7 +175,7 @@ export default function AIChatPage() {
               </p>
               
               {/* Suggested prompts */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 w-full max-w-2xl">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 w-full max-w-4xl">
                 {SUGGESTED_PROMPTS.map((prompt, index) => (
                   <button
                     key={index}
@@ -160,7 +194,7 @@ export default function AIChatPage() {
               </div>
             </div>
           ) : (
-            messages.map((message) => (
+            currentMessages.map((message) => (
               <div
                 key={message.id}
                 className={`flex gap-4 ${message.role === 'user' ? 'justify-end' : ''}`}
@@ -171,13 +205,15 @@ export default function AIChatPage() {
                   </div>
                 )}
                 <div
-                  className={`max-w-2xl rounded-xl px-4 py-3 ${
+                  className={`max-w-3xl rounded-xl px-4 py-3 ${
                     message.role === 'user'
                       ? 'bg-emerald-500 text-white'
                       : 'bg-slate-800 text-slate-200'
                   }`}
                 >
-                  <p className="whitespace-pre-wrap">{message.content}</p>
+                  <div className="prose prose-invert prose-sm max-w-none">
+                    <p className="whitespace-pre-wrap m-0">{message.content}</p>
+                  </div>
                 </div>
                 {message.role === 'user' && (
                   <div className="w-8 h-8 rounded-lg bg-slate-700 flex items-center justify-center flex-shrink-0">
@@ -188,13 +224,14 @@ export default function AIChatPage() {
             ))
           )}
           
-          {isLoading && (
+          {currentLoading && (
             <div className="flex gap-4">
               <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-400 to-teal-500 flex items-center justify-center flex-shrink-0">
                 <Bot className="w-4 h-4 text-white" />
               </div>
-              <div className="bg-slate-800 rounded-xl px-4 py-3">
-                <Loader2 className="w-5 h-5 text-emerald-400 animate-spin" />
+              <div className="bg-slate-800 rounded-xl px-4 py-3 flex items-center gap-2">
+                <Loader2 className="w-4 h-4 text-emerald-400 animate-spin" />
+                <span className="text-slate-400 text-sm">Thinking...</span>
               </div>
             </div>
           )}
@@ -204,18 +241,27 @@ export default function AIChatPage() {
 
         {/* Input */}
         <div className="p-4 border-t border-slate-800">
-          <form onSubmit={handleSubmit} className="flex gap-3">
+          <form 
+            onSubmit={isDemo ? handleDemoSubmit : handleSubmit} 
+            className="flex gap-3"
+          >
             <input
               type="text"
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
+              value={currentInput}
+              onChange={(e) => {
+                if (isDemo) {
+                  setDemoInput(e.target.value);
+                } else {
+                  handleInputChange(e);
+                }
+              }}
               placeholder="Ask about your projects, grants, or data..."
               className="flex-1 px-4 py-3 bg-slate-800/50 border border-slate-700/50 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50 transition-all"
-              disabled={isLoading}
+              disabled={currentLoading}
             />
             <button
               type="submit"
-              disabled={!input.trim() || isLoading}
+              disabled={!currentInput?.trim() || currentLoading}
               className="px-4 py-3 bg-emerald-500 hover:bg-emerald-600 disabled:bg-slate-700 disabled:cursor-not-allowed text-white rounded-xl transition-colors"
             >
               <Send className="w-5 h-5" />
@@ -360,6 +406,70 @@ Would you like me to generate a detailed report or map visualization?`;
 Would you like a detailed analysis of any specific route?`;
   }
 
+  if (lowerQuery.includes('needs statement') || (lowerQuery.includes('grant') && lowerQuery.includes('writ'))) {
+    return `## Draft Needs Statement for ATP Grant
+
+Here's a draft needs statement for your protected bike lane project:
+
+---
+
+**Needs Statement**
+
+The [Project Name] corridor currently lacks safe, dedicated infrastructure for people bicycling, creating a critical gap in the regional active transportation network. Despite high demand for bicycle travel along this corridor—evidenced by [X] daily cyclists counted—riders must navigate alongside [X] vehicles per day traveling at speeds up to [X] mph with no separation or protection.
+
+**Safety Concerns:** Over the past five years, this corridor has experienced [X] bicycle-involved collisions, including [X] severe injuries and [X] fatalities. The collision rate of [X] per mile significantly exceeds the regional average, placing this corridor in the top [X]% of high-injury network segments.
+
+**Equity Considerations:** This project serves a disadvantaged community as defined by CalEnviroScreen 4.0, with [X]% of the population within a half-mile qualifying as low-income. Currently, residents lack safe active transportation options to access employment centers, schools, and essential services, disproportionately impacting those without vehicle access.
+
+**Community Support:** Through extensive outreach including [X] community workshops and an interactive mapping tool that gathered [X] inputs, residents consistently identified this corridor as their top priority for bicycle safety improvements.
+
+---
+
+Would you like me to refine any section or add specific data from your projects?`;
+  }
+
+  if (lowerQuery.includes('safety') || lowerQuery.includes('crash')) {
+    return `## Safety Analysis & Priority Improvements
+
+### 🚨 High-Injury Network Analysis
+
+Based on the last 5 years of collision data, here are the priority locations:
+
+**Top 5 High-Crash Intersections:**
+1. **K Street & 10th** - 23 crashes, 5 severe injuries
+   - Pattern: Right-hook collisions with cyclists
+   - Recommended: Protected intersection design
+
+2. **J Street & 16th** - 18 crashes, 3 severe injuries
+   - Pattern: Pedestrian crossings, turning conflicts
+   - Recommended: Leading pedestrian interval, curb extensions
+
+3. **Broadway & 21st** - 15 crashes, 4 severe injuries
+   - Pattern: High-speed through traffic
+   - Recommended: Road diet, bike lanes
+
+4. **Folsom Blvd & 65th** - 14 crashes, 2 fatalities
+   - Pattern: Midblock pedestrian crossings
+   - Recommended: HAWK signal, median refuge
+
+5. **Arden Way & Eastern** - 12 crashes, 3 severe injuries
+   - Pattern: Complex turning movements
+   - Recommended: Signal timing, turn restrictions
+
+### 📊 Crash Trends
+- Total crashes (5-year): 287
+- Involving cyclists: 89 (31%)
+- Involving pedestrians: 112 (39%)
+- Severe/fatal: 34 (12%)
+
+### 💡 Priority Recommendations
+1. Apply for HSIP funding for top 3 intersections
+2. Include K & 10th improvements in Complete Streets project
+3. Conduct speed study on Broadway corridor
+
+Would you like detailed countermeasure recommendations for any location?`;
+  }
+
   // Default response
   return `I'd be happy to help with that! As your AI planning assistant, I can help you with:
 
@@ -372,6 +482,6 @@ Would you like a detailed analysis of any specific route?`;
 Could you tell me more specifically what you'd like to know? For example:
 - "What's the status of our active projects?"
 - "Find grant opportunities for pedestrian improvements"
-- "Analyze community feedback on the trail project"`;
+- "Analyze community feedback on the trail project"
+- "Help me write a needs statement for an ATP grant"`;
 }
-

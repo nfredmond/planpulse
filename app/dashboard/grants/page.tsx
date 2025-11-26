@@ -3,11 +3,11 @@
 import { useEffect, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { useDemo } from '@/lib/hooks/useDemo';
-import { DEMO_GRANT_APPLICATIONS, DEMO_GRANT_PROGRAMS } from '@/lib/demo-data';
+import { DEMO_GRANT_APPLICATIONS, DEMO_GRANT_PROGRAMS, DEMO_PROJECTS } from '@/lib/demo-data';
+import { GrantAIComposer } from '@/components/grants/grant-ai-composer';
 import Link from 'next/link';
 import { 
   Plus, 
-  Search, 
   Calendar,
   DollarSign,
   ChevronRight,
@@ -16,7 +16,8 @@ import {
   Clock,
   XCircle,
   Send,
-  ExternalLink
+  ExternalLink,
+  Sparkles
 } from 'lucide-react';
 
 interface GrantApplication {
@@ -58,6 +59,8 @@ export default function GrantsPage() {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('all');
   const [showPrograms, setShowPrograms] = useState(false);
+  const [showAIComposer, setShowAIComposer] = useState(false);
+  const [projects, setProjects] = useState<{id: string; name: string; description?: string; budget?: number}[]>([]);
 
   useEffect(() => {
     if (!mounted) return;
@@ -66,24 +69,27 @@ export default function GrantsPage() {
       if (isDemo) {
         setApplications(DEMO_GRANT_APPLICATIONS as GrantApplication[]);
         setPrograms(DEMO_GRANT_PROGRAMS as GrantProgram[]);
+        setProjects(DEMO_PROJECTS.map(p => ({
+          id: p.id,
+          name: p.name,
+          description: p.description || undefined,
+          budget: p.budget || undefined,
+        })));
         setLoading(false);
         return;
       }
 
       const supabase = createClient();
       
-      const { data: apps } = await supabase
-        .from('grant_applications')
-        .select('*')
-        .order('deadline', { ascending: true });
-
-      const { data: progs } = await supabase
-        .from('grant_programs')
-        .select('*')
-        .eq('is_active', true);
+      const [{ data: apps }, { data: progs }, { data: projs }] = await Promise.all([
+        supabase.from('grant_applications').select('*').order('deadline', { ascending: true }),
+        supabase.from('grant_programs').select('*').eq('is_active', true),
+        supabase.from('projects').select('id, name, description, budget'),
+      ]);
 
       setApplications(apps || []);
       setPrograms(progs || []);
+      setProjects(projs || []);
       setLoading(false);
     }
 
@@ -162,7 +168,24 @@ export default function GrantsPage() {
         </div>
         <div className="flex gap-3">
           <button
-            onClick={() => setShowPrograms(!showPrograms)}
+            onClick={() => {
+              setShowAIComposer(!showAIComposer);
+              setShowPrograms(false);
+            }}
+            className={`inline-flex items-center gap-2 px-4 py-2 font-medium rounded-lg transition-colors border ${
+              showAIComposer 
+                ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' 
+                : 'bg-slate-800 hover:bg-slate-700 text-white border-slate-700'
+            }`}
+          >
+            <Sparkles className="w-4 h-4" />
+            AI Writer
+          </button>
+          <button
+            onClick={() => {
+              setShowPrograms(!showPrograms);
+              setShowAIComposer(false);
+            }}
             className="inline-flex items-center gap-2 px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white font-medium rounded-lg transition-colors border border-slate-700"
           >
             <DollarSign className="w-4 h-4" />
@@ -177,6 +200,11 @@ export default function GrantsPage() {
           </Link>
         </div>
       </div>
+
+      {/* AI Composer Section */}
+      {showAIComposer && (
+        <GrantAIComposer projects={projects} />
+      )}
 
       {/* Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
