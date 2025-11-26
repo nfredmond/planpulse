@@ -3,23 +3,9 @@
 import { useRef, useEffect, useState } from 'react';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
+import type { CommunityInput } from '@/lib/types/community';
 
-interface CommunityInput {
-  id: string;
-  input_type: string;
-  category: string;
-  title: string;
-  content: string;
-  sentiment: string;
-  upvotes: number;
-  photo_urls?: string[];
-  moderation_status?: string;
-  created_at?: string;
-  lat?: number;
-  lng?: number;
-}
-
-interface EngagementMapProps {
+export interface EngagementMapProps {
   inputs: CommunityInput[];
   center: [number, number];
   zoom: number;

@@ -7,6 +7,7 @@ import dynamic from 'next/dynamic';
 import { useDemo } from '@/lib/hooks/useDemo';
 import { DEMO_ENGAGEMENT_PROJECTS, DEMO_COMMUNITY_INPUTS } from '@/lib/demo-data';
 import { toast } from 'sonner';
+import type { CommunityInput, Engagement } from '@/lib/types/community';
 import { 
   ArrowLeft, 
   MapPin,
@@ -36,36 +37,6 @@ const EngagementMap = dynamic(() => import('@/components/community/EngagementMap
     </div>
   ),
 });
-
-interface CommunityInput {
-  id: string;
-  input_type: string;
-  category: string;
-  title: string;
-  content: string;
-  sentiment: string;
-  photo_urls: string[];
-  upvotes: number;
-  moderation_status: string;
-  created_at: string;
-  lat?: number;
-  lng?: number;
-}
-
-interface Engagement {
-  id: string;
-  name: string;
-  description: string | null;
-  status: string;
-  start_date: string | null;
-  end_date: string | null;
-  center_lat: number;
-  center_lng: number;
-  zoom_level: number;
-  base_map_style: string;
-  moderation_enabled: boolean;
-  public_url?: string;
-}
 
 export default function EngagementDetailPage() {
   const params = useParams();
