@@ -70,7 +70,6 @@ export async function POST(request: NextRequest) {
         organization_id: profile.organization_id,
         name: body.name,
         grant_program_id: body.grant_program_id,
-        grant_program: body.grant_program,
         project_id: body.project_id,
         description: body.description,
         amount_requested: body.amount_requested,
